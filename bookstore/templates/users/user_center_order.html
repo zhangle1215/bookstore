@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load filters %}
+{% block title %}尚硅谷书店-首页{% endblock title %}
+{% block topfiles %}
+{% endblock topfiles %}
+{% block body %}
+
+	<div class="main_con clearfix">
+		<div class="left_menu_con clearfix">
+			<h3>用户中心</h3>
+			<ul>
+				<li><a href="{% url 'user:user' %}">· 个人信息</a></li>
+				<li><a href="{% url 'user:order' %}" class="active">· 全部订单</a></li>
+				<li><a href="{% url 'user:address' %}">· 收货地址</a></li>
+			</ul>
+		</div>
+		<div class="right_content clearfix">
+				{% csrf_token %}
+				<h3 class="common_title2">全部订单</h3>
+				{# OrderInfo #}
+				
+				{% for order in order_li %}
+				<ul class="order_list_th w978 clearfix">
+					<li class="col05"><input type="checkbox" name="is_check" value="{{ order.order_id }}"></li>
+					<li class="col01">{{ order.create_time }}</li>
+					<li class="col02">订单号：{{ order.order_id }}</li>
+					<li class="col02 stress">{{ order.status|order_status }}</li>
+					<li class="col03">总计:</li>
+					<li class="col04"><a class="asd" href="#"><img src="/static/images/aa.png"></a></li>
+				</ul>
+
+				<table class="order_list_table w980">
+					<tbody>
+						<tr>
+							<td width="55%">
+							
+								{# 遍历出来的order_books是一个OrderGoods对象 #}
+								{% for order_books in order.order_books_li %}
+								<ul class="order_book_list clearfix">                   
+									<li class="col01"><img src="{% static order_books.books.image %}"></li>
+									<li class="col02">{{ order_books.books.name }}<em>{{ order_books.books.price }}元/{{ order_books.books.unite }}</em></li>
+									<li class="col03">{{ order_books.count }}</li>
+									<li class="col04">{{ order_books.amount }}元</li>
+								</ul>
+								{% endfor %}
+							</td>
+							<td width="15%">{{ order.total_price }}元</td>
+							<td width="15%">{{ order.status }}</td>
+							<td width="15%"><a href="#" pay_method="{{ order.pay_method }}" order_id="{{ order.order_id }}" order_status="{{ order.status }}" passport="{{ passport_id }}" class="oper_btn">去付款</a></td>
+
+						</tr>
+					</tbody>
+				</table>
+
+				{% endfor %}
+				<ul class="order_list_foot">
+					<li class="a1"><input type="checkbox" name="is_all_check"></li>
+					<li class="a2">全选</li>
+					<li class="a3"><input class="qwe" type="submit" name="delete" value="删除订单"></li>
+				</ul>
+				
+				<div class="pagenation">
+					<a href="#"><上一页</a>
+					<a href="#" class="active">1</a>
+					<a href="#">2</a>
+					<a href="#">3</a>
+					<a href="#">4</a>
+					<a href="#">5</a>
+					<a href="#">下一页></a>
+				</div>
+		</div>
+	</div>
+{% endblock body %}
+{% block bottomfiles%}
+	<script>
+		$(function () {
+			$('.oper_btn').click(function () {
+				// 获取订单id和订单的状态
+				order_id = $(this).attr('order_id')
+				order_status = $(this).attr('order_status')
+				csrf = $('input[name="csrfmiddlewaretoken"]').val()
+				params = {'order_id':order_id, 'csrfmiddlewaretoken':csrf}
+				if (order_status == 1){
+					$.post('/order/pay/', params, function (data) {
+						if (data.res == 3){
+							// 把用户引导支付页面
+							window.open(data.pay_url)
+							// 查询用户的支付结果
+							$.post('/order/check_pay/', params, function (data) {
+								if (data.res == 3){
+									alert('支付成功')
+									// 重新刷新页面
+									location.reload()
+								}
+								else{
+									alert(data.errmsg)
+								}
+							})
+						}
+						else{
+							alert(data.errmsg)
+						}
+					})
+				}
+			})
+				// 全选和全不选
+			$('.order_list_foot').find(':checkbox').change(function () {
+				// 获取全选checkbox的选中状态
+				is_checked = $(this).prop('checked')
+
+				// 遍历所有商品对应的checkbox,设置checked属性和全选checkbox一致
+				$('.order_list_th').find(':checkbox').each(function () {
+					$(this).prop('checked', is_checked)
+				})
+
+				// 更新商品的信息
+				
+			})
+			function is_select(){
+				// 获取所有商品对应的checkbox的数目
+				all_len = $('.order_list_th').find(':checkbox').length
+				console.log(all_len)
+				
+				
+				// 获取所有被选中商品的checkbox的数目
+				checked_len  = $('.order_list_th').find(':checked').length
+
+				if (checked_len < all_len){
+					$('.order_list_foot').find(':checkbox').prop('checked', false)
+				}
+				else {
+					$('.order_list_foot').find(':checkbox').prop('checked', true)
+				}
+				if(all_len == 0){
+					$('.order_list_foot').find(':checkbox').prop('checked', false)
+				}
+			}
+
+			// 商品对应的checkbox状态发生改变时，全选checkbox的改变
+			
+			$('.order_list_th').find(':checkbox').change(function () {
+				is_select()
+
+			})
+			
+			
+
+			$('.asd').click(function(){
+				// 获取订单id和订单的状态
+				ul = $(this).parents('ul')
+				table = $(this).parents('ul').next()
+				order_id = $('.oper_btn').attr('order_id')
+				passport_id = $('.oper_btn').attr('passport_id')		
+				order_status = $('.oper_btn').attr('order_status')
+				csrf = $('input[name="csrfmiddlewaretoken"]').val()
+				params = {'order_id':order_id, 'csrfmiddlewaretoken':csrf,'passport_id':passport_id}
+				var con = confirm('确认删除订单.')
+				if(con){
+					$.post('/order/del/', params, function (data) {
+						if(data.res == 1){							
+							ul.remove()
+							table.remove()
+							is_select()
+						}
+
+					})
+				}
+			})
+
+			$('.qwe').click(function(){
+				checked  = $('.order_list_th').find(':checked').parents('ul')
+				checked_next = $('.order_list_th').find(':checked').parents('ul').next()
+				var con = confirm('确认删除订单.')
+				var box = document.getElementsByName("is_check")
+				boxs = []
+				
+				csrf = $('input[name="csrfmiddlewaretoken"]').val()
+				for(k in box){
+        			if(box[k].checked)
+            			boxs.push(box[k].value)
+    				}
+    			console.log(boxs)
+    			boxss = boxs.join(',')
+    			console.log(typeof(boxss))
+    			params = {'boxss':boxss,'csrfmiddlewaretoken':csrf}
+				if(con){
+					$.post('/order/delall/',params,function(data){
+						if(data.res == 1){
+							checked.remove()
+							checked_next.remove()
+							is_select()
+						}
+					})
+
+				}
+			})
+		})
+	</script>
+{% endblock bottomfiles %}
