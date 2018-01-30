@@ -114,7 +114,7 @@ def logout(request):
 @login_required
 def user(request):
 	passport_id = request.session.get('passport_id')
-	addr = Address.objects.get_all(passport_id=passport_id)
+	addr = Address.objects.get_default_address(passport_id=passport_id)
 
 		# 获取用户的最近浏览信息
 	con = get_redis_connection('default')
