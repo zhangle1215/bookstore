@@ -9,6 +9,6 @@ urlpatterns = [
 	url(r'^logout$',views.logout,name='logout'),
 	url(r'^$',views.user,name = 'user'),
 	url(r'^address/$',views.address,name='address'),
-	url(r'^order/$',views.order,name='order'),
+	url(r'^order/(?P<page>\d+)/$',views.order,name='order'),
 	url(r'^verifycode/$', views.verifycode, name='verifycode'),
 ]

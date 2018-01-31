@@ -11,7 +11,7 @@
 			<h3>用户中心</h3>
 			<ul>
 				<li><a href="{% url 'user:user' %}">· 个人信息</a></li>
-				<li><a href="{% url 'user:order' %}" class="active">· 全部订单</a></li>
+				<li><a href="{% url 'user:order' page=1 %}" class="active">· 全部订单</a></li>
 				<li><a href="{% url 'user:address' %}">· 收货地址</a></li>
 			</ul>
 		</div>
@@ -27,7 +27,7 @@
 					<li class="col02">订单号：{{ order.order_id }}</li>
 					<li class="col02 stress">{{ order.status|order_status }}</li>
 					<li class="col03">总计:</li>
-					<li class="col04"><a class="asd" href="#"><img src="/static/images/aa.png"></a></li>
+					<li class="col04"><a class="asd" href="#" order_id="{{ order.order_id }}"><img src="/static/images/aa.png"></a></li>
 				</ul>
 
 				<table class="order_list_table w980">
@@ -61,13 +61,19 @@
 				</ul>
 				
 				<div class="pagenation">
-					<a href="#"><上一页</a>
-					<a href="#" class="active">1</a>
-					<a href="#">2</a>
-					<a href="#">3</a>
-					<a href="#">4</a>
-					<a href="#">5</a>
-					<a href="#">下一页></a>
+					{% if order_li.has_previous %}
+						<a href="/user/order/{{ order_li.previous_page_number }}"><上一页</a>
+					{% endif %}
+					{% for pindex in pages %}
+						{% if pindex == books_li.number %}
+							<a href="/user/order/{{ pindex }}" class="active">{{ pindex }}</a>
+						{% else %}
+							<a href="/user/order/{{ pindex }}">{{ pindex }}</a>
+						{% endif %}
+					{% endfor %}
+					{% if order_li.has_next %}
+						<a href="/user/order/{{ order_li.next_page_number }}">下一页></a>
+					{% endif %}
 				</div>
 		</div>
 	</div>
@@ -150,9 +156,10 @@
 				// 获取订单id和订单的状态
 				ul = $(this).parents('ul')
 				table = $(this).parents('ul').next()
-				order_id = $('.oper_btn').attr('order_id')
+				order_id = $(this).attr('order_id')
+				console.log(order_id)
 				passport_id = $('.oper_btn').attr('passport_id')		
-				order_status = $('.oper_btn').attr('order_status')
+				// order_status = $(this).attr('order_status')
 				csrf = $('input[name="csrfmiddlewaretoken"]').val()
 				params = {'order_id':order_id, 'csrfmiddlewaretoken':csrf,'passport_id':passport_id}
 				var con = confirm('确认删除订单.')
@@ -162,6 +169,7 @@
 							ul.remove()
 							table.remove()
 							is_select()
+							window.location.href = '/user/order/1'
 						}
 
 					})
@@ -177,19 +185,20 @@
 				
 				csrf = $('input[name="csrfmiddlewaretoken"]').val()
 				for(k in box){
-        			if(box[k].checked)
-            			boxs.push(box[k].value)
-    				}
-    			console.log(boxs)
-    			boxss = boxs.join(',')
-    			console.log(typeof(boxss))
-    			params = {'boxss':boxss,'csrfmiddlewaretoken':csrf}
+					if(box[k].checked)
+						boxs.push(box[k].value)
+					}
+				console.log(boxs)
+				boxss = boxs.join(',')
+				console.log(typeof(boxss))
+				params = {'boxss':boxss,'csrfmiddlewaretoken':csrf}
 				if(con){
 					$.post('/order/delall/',params,function(data){
 						if(data.res == 1){
 							checked.remove()
 							checked_next.remove()
 							is_select()
+							window.location.href = '/user/order/1'
 						}
 					})
 

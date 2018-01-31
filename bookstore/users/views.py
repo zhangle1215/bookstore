@@ -11,6 +11,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django_redis import get_redis_connection
 from django.http import HttpResponse
+from django.core.paginator import Paginator
 import re
 
 # Create your views here.
@@ -164,7 +165,7 @@ def address(request):
 		return redirect(reverse('user:address'))
 
 @login_required
-def order(request):
+def order(request,page):
 	passport_id = request.session.get('passport_id')
 
 	order_li = OrderInfo.objects.filter(passport_id=passport_id)
@@ -186,10 +187,39 @@ def order(request):
 		order.total_price = total_price
 
 		order.order_books_li = order_books_li
+	# 分页
+	paginator = Paginator(order_li, 3)
+
+	# 获取分页之后的总页数
+	num_pages = paginator.num_pages
+	
+	# 取第page页数据
+	if page == '' or int(page) > num_pages:
+		page = 1
+	else:
+		page = int(page)
+
+	# 返回值是一个Page类的实例对象
+	order_li = paginator.page(page)
+
+	# 进行页码控制
+	# 1.总页数<5, 显示所有页码
+	# 2.当前页是前3页，显示1-5页
+	# 3.当前页是后3页，显示后5页 10 9 8 7		
+	# 4.其他情况，显示当前页前2页，后2页，当前页
+	if num_pages < 3:
+		pages = range(1, num_pages+1)
+	elif page <= 2:
+		pages = range(1, 4)
+	elif num_pages - page <= 2:
+		pages = range(num_pages-2, num_pages+1)
+	else:
+		pages = range(page-1, page+2)
 
 	context = {
 		'order_li':order_li,
 		'order':order,
+		'pages':pages,
 
 	}
 	return render(request,'users/user_center_order.html',context)

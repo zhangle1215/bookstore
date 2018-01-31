@@ -52,6 +52,8 @@ def order_place(request):
 
 	books_ids = ','.join(books_ids)
 	print(addr)
+
+
 	context = {
 		'addr': addr,
 		'books_li': books_li,
@@ -151,6 +153,8 @@ def order_delete(request):
 		return JsonResponse({'res': 0, 'errmsg': '请先登录'})
 
 	order_id = request.POST.get('order_id')
+	print(order_id)
+	
 	passport_id = request.session.get('passport_id')
 	OrderInfo.objects.filter(passport_id=passport_id).filter(order_id=order_id).delete()
 
