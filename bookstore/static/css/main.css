@@ -223,7 +223,7 @@ html,body{height:100%}
 .pagenation a{display:inline-block;border:1px solid #d2d2d2;background-color:#f8f6f7;font-size:12px;padding:7px 10px;color:#666;margin:5px}
 
 .pagenation .active{background-color:#fff;color:#43a200}
-
+.bbb{display: none;height: 200px;background-color:#ff0000}
 
 /* 商品详情样式 */
 .book_detail_con{

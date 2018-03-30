@@ -218,7 +218,7 @@ def order(request,page):
 
 	context = {
 		'order_li':order_li,
-		'order':order,
+		# 'order':order,
 		'pages':pages,
 
 	}

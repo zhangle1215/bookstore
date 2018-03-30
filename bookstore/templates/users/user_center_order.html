@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
 {% load filters %}
-{% block title %}尚硅谷书店-首页{% endblock title %}
+{% block title %}绿峰书店-首页{% endblock title %}
 {% block topfiles %}
 {% endblock topfiles %}
 {% block body %}
@@ -54,6 +54,7 @@
 				</table>
 
 				{% endfor %}
+				<div  class="bbb"></div>
 				<ul class="order_list_foot">
 					<li class="a1"><input type="checkbox" name="is_all_check"></li>
 					<li class="a2">全选</li>
@@ -81,6 +82,16 @@
 {% block bottomfiles%}
 	<script>
 		$(function () {
+			function display_bbb(){
+				$('.bbb').css('display','block')
+			}
+			function ccc(){
+				len = $('.asd').length
+				if(len == 0){
+					display_bbb()
+				}
+			}
+			ccc()
 			$('.oper_btn').click(function () {
 				// 获取订单id和订单的状态
 				order_id = $(this).attr('order_id')
@@ -140,6 +151,7 @@
 				}
 				if(all_len == 0){
 					$('.order_list_foot').find(':checkbox').prop('checked', false)
+
 				}
 			}
 
@@ -149,8 +161,7 @@
 				is_select()
 
 			})
-			
-			
+						
 
 			$('.asd').click(function(){
 				// 获取订单id和订单的状态
@@ -164,12 +175,13 @@
 				params = {'order_id':order_id, 'csrfmiddlewaretoken':csrf,'passport_id':passport_id}
 				var con = confirm('确认删除订单.')
 				if(con){
-					$.post('/order/del/', params, function (data) {
+					$.post('/order/del/', params, function (data) {	
 						if(data.res == 1){							
 							ul.remove()
 							table.remove()
 							is_select()
 							window.location.href = '/user/order/1'
+							
 						}
 
 					})
@@ -199,6 +211,7 @@
 							checked_next.remove()
 							is_select()
 							window.location.href = '/user/order/1'
+							
 						}
 					})
 
